@@ -1,0 +1,4 @@
+recycler_id,name,facility_location,authorization_status,pickup_available,materials_accepted
+R001,GreenCycle Recyclers,Pune,demo_authorized,true,PCB;Cables;Copper
+R002,EcoShred Industries,Mumbai,demo_authorized,true,PCB;Copper;Aluminium
+R003,CleanStream Metals,Nashik,pending,false,Copper;Aluminium;Cables

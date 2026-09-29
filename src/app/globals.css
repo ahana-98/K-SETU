@@ -1,0 +1,82 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+
+@theme {
+  --color-forest: #163c33;
+  --color-pine: #2c7a4b;
+  --color-leaf: #5fae46;
+  --color-paper: #fafbfa;
+  --color-mint: #eaf5ec;
+  --color-ink: #16281f;
+  --color-sage: #5b7266;
+  --color-okbg: #e6f4e6;
+  --color-warn: #b45309;
+  --color-warnbg: #fef3c7;
+  --color-danger: #b91c1c;
+  --color-dangerbg: #fee2e2;
+}
+
+:root {
+  --ksetu-deep-forest: #163c33;
+  --ksetu-forest-green: #2c7a4b;
+  --ksetu-leaf-green: #5fae46;
+  --ksetu-soft-white: #fafbfa;
+  --ksetu-mint-tint: #eaf5ec;
+  --ksetu-text: #16281f;
+  --ksetu-muted: #5b7266;
+  --ksetu-success-bg: #e6f4e6;
+}
+
+html,
+body {
+  background: var(--ksetu-soft-white);
+  color: var(--ksetu-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #b9cdc2 transparent;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+@keyframes ksetu-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+.pulse-dot {
+  animation: ksetu-pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes ksetu-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.rise {
+  animation: ksetu-rise 0.28s ease-out both;
+}

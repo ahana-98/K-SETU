@@ -1,0 +1,5 @@
+transaction_id,material_category,weight_kg,quoted_rate,final_value_inr,location
+T001,PCB,8,180,1224,Pune
+T002,Cables,12,120,1224,Mumbai
+T003,Copper,5,420,1785,Pune
+T004,CRT,15,18,243,Nashik

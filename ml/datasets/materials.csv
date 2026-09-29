@@ -1,0 +1,6 @@
+material_id,category,subcategory,condition,approx_weight_kg,source_type,estimated_value_inr
+M001,PCB,motherboard,used,8,household,1224
+M002,Cables,copper-cable,good,12,household,1440
+M003,CRT,tube-monitor,damaged,15,shop,243
+M004,LCD/LED Panels,led-tv,used,10,household,382
+M005,Batteries,li-ion,mixed,6,household,280

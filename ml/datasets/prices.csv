@@ -1,0 +1,7 @@
+price_id,material_category,location,date,buying_price,unit
+P001,PCB,Pune,2026-01-05,172,kg
+P002,PCB,Pune,2026-01-12,176,kg
+P003,PCB,Pune,2026-01-19,180,kg
+P004,Cables,Pune,2026-01-05,115,kg
+P005,Cables,Pune,2026-01-12,118,kg
+P006,Copper,Pune,2026-01-05,410,kg

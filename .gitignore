@@ -1,0 +1,16 @@
+node_modules
+.next
+out
+.env
+.env.local
+*.log
+.DS_Store
+storage/uploads/*
+!storage/uploads/.gitkeep
+.env.*
+!.env.example
+!.env.sample
+.vercel
+coverage
+*.pem
+*.tsbuildinfo
