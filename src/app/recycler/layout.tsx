@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Icon, Logo, logout } from "@/components/ui";
 import { useLang } from "@/lib/i18n";
+import SessionGuard from "@/components/SessionGuard";
 
 const NAV = [
   { href: "/recycler", icon: "home", key: "recy.dashboard", exact: true },
@@ -25,6 +26,7 @@ export default function RecyclerLayout({ children }: { children: React.ReactNode
   const isActive = (n: (typeof NAV)[number]) => (n.exact ? pathname === n.href : pathname.startsWith(n.href));
 
   return (
+    <SessionGuard>
     <div className="min-h-screen bg-paper lg:flex">
       {/* Desktop sidebar */}
       <aside className="hidden w-60 shrink-0 flex-col bg-forest text-white lg:flex">
@@ -64,5 +66,6 @@ export default function RecyclerLayout({ children }: { children: React.ReactNode
         <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8">{children}</main>
       </div>
     </div>
+    </SessionGuard>
   );
 }

@@ -45,9 +45,78 @@ const SAFETY_TOPICS: { key: string; icon: string; en: [string, string]; hi: [str
 
 export async function seedDatabase() {
   const admins = await db.select().from(s.users).where(eq(s.users.email, "admin@ksetu.demo"));
-  if (admins.length) return; // already seeded
+if (admins.length) {
+  // Repair missing reference/demo data without reseeding users or lots.
+  const safetyRows = await db
+    .select({ id: s.safetyContent.id })
+    .from(s.safetyContent)
+    .limit(1);
 
-  const r = rng(20260101);
+  if (safetyRows.length === 0) {
+    for (const t of SAFETY_TOPICS) {
+      await db.insert(s.safetyContent).values([
+        { topicKey: t.key, iconKey: t.icon, lang: "en", title: t.en[0], body: t.en[1] },
+        { topicKey: t.key, iconKey: t.icon, lang: "hi", title: t.hi[0], body: t.hi[1] },
+        { topicKey: t.key, iconKey: t.icon, lang: "mr", title: t.mr[0], body: t.mr[1] },
+      ]);
+    }
+  }
+
+  const settingsRows = await db
+    .select({ key: s.appSettings.key })
+    .from(s.appSettings)
+    .where(eq(s.appSettings.key, "unit_economics"))
+    .limit(1);
+
+if (settingsRows.length === 0) {
+    await db.insert(s.appSettings).values([
+      {
+        key: "unit_economics",
+        label: "Unit economics assumptions (DEMO DATA)",
+        value: {
+          avgTransactionValue: 1450,
+          formalChannelValue: 1720,
+          platformOperatingCost: 60,
+          transactionCost: 25,
+          potentialPlatformRevenue: 45,
+          collectorBenefit: 270,
+          currency: "INR",
+          note: "ASSUMPTION — hypothetical values for prototype demonstration, not field research.",
+        },
+      },
+    ]);
+  }
+
+  const researchRows = await db
+    .select({ id: s.fieldResearch.id })
+    .from(s.fieldResearch)
+    .limit(1);
+
+  if (researchRows.length === 0) {
+    await db.insert(s.fieldResearch).values([
+      {
+        participantRef: "SAMPLE-FR-001",
+        generalLocation: "Pune — informal scrap market",
+        materialHandled: "Mixed e-waste, cables, PCB",
+        currentProcess: "Sells to local aggregator without price reference",
+        priceAwareness: "Low — accepts first offer",
+        formalAwareness: "Unaware of authorized recyclers",
+        challenges: "No price transparency; unsafe cable burning observed",
+      },
+      {
+        participantRef: "SAMPLE-FR-002",
+        generalLocation: "Mumbai — door-to-door collector",
+        materialHandled: "CRT, plastics, motors",
+        currentProcess: "Weekly route, cash settlement",
+        priceAwareness: "Medium — compares 2 buyers",
+        formalAwareness: "Heard of recyclers but no direct contact",
+        challenges: "Transport cost; no receipt or traceability",
+      },
+    ]);
+  }
+
+  return;
+}  const r = rng(20260101);
   const now = Date.now();
   const daysAgo = (d: number) => new Date(now - d * 86400_000);
 

@@ -4,6 +4,7 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { Icon, Logo, logout } from "@/components/ui";
 import { useLang } from "@/lib/i18n";
+import SessionGuard from "@/components/SessionGuard";
 
 const NAV = [
   { href: "/admin", icon: "home", key: "admin.dashboard", exact: true },
@@ -30,6 +31,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   );
 
   return (
+    <SessionGuard>
     <div className="min-h-screen bg-paper lg:flex">
       <aside className="hidden w-60 shrink-0 flex-col bg-forest text-white lg:flex">
         <div className="px-5 py-6"><Logo size={40} withWordmark dark /></div>
@@ -65,5 +67,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8">{children}</main>
       </div>
     </div>
+    </SessionGuard>
   );
 }

@@ -9,6 +9,8 @@ import VoiceAssistant from "@/components/VoiceAssistant";
 export default function LoginPage() {
   const { t, lang, setLang } = useLang();
 
+  const [email, setEmail] = useState("");
+const [password, setPassword] = useState("");
   const [phone, setPhone] = useState("");
   const [otp, setOtp] = useState("");
   const [otpSent, setOtpSent] = useState(false);
@@ -102,6 +104,39 @@ export default function LoginPage() {
     }
   }
 
+  async function submitEmailPassword(e: React.FormEvent) {
+  e.preventDefault();
+  setError(null);
+  setBusy("email");
+
+  try {
+    const res = await fetch("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: email.trim().toLowerCase(),
+        password,
+      }),
+    });
+
+    const data = await res.json().catch(() => ({}));
+
+    if (!res.ok) {
+      setError(data?.error || "Invalid email or password.");
+      return;
+    }
+
+    if (data.demoFallback) {
+      setDemoMode(true);
+    }
+
+    window.location.href = data.redirect || "/";
+  } catch {
+    setError("Unable to connect to the authentication server.");
+  } finally {
+    setBusy(null);
+  }
+}
   async function submitDemoRole(demoRole: string) {
     setError(null);
     setBusy(demoRole);
@@ -306,6 +341,55 @@ export default function LoginPage() {
               )}
             </form>
 
+<div className="my-5 flex items-center gap-3">
+  <span className="h-px flex-1 bg-[#dcebe0]" />
+  <span className="text-[11px] font-bold tracking-widest text-sage">
+    OR LOGIN WITH EMAIL
+  </span>
+  <span className="h-px flex-1 bg-[#dcebe0]" />
+</div>
+
+<form onSubmit={submitEmailPassword} className="space-y-4">
+  <Field label="Email address">
+    <input
+      className={inputCls}
+      type="email"
+      autoComplete="username"
+      value={email}
+      onChange={(e) => setEmail(e.target.value)}
+      placeholder="you@example.com"
+      required
+      disabled={busy !== null}
+    />
+  </Field>
+
+  <Field label="Password">
+    <input
+      className={inputCls}
+      type="password"
+      autoComplete="current-password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      placeholder="Enter your password"
+      required
+      disabled={busy !== null}
+    />
+  </Field>
+
+  <Btn
+    type="submit"
+    full
+    size="lg"
+    disabled={busy !== null}
+  >
+    {busy === "email" ? (
+      <Spinner />
+    ) : (
+      <Icon name="lock" size={18} />
+    )}
+    {busy === "email" ? "Signing in..." : "Login with Email"}
+  </Btn>
+</form>
             <div className="my-5 flex items-center gap-3">
               <span className="h-px flex-1 bg-[#dcebe0]" />
               <span className="text-[11px] font-bold tracking-widest text-sage">

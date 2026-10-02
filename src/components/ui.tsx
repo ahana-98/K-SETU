@@ -354,6 +354,13 @@ export function useSession() {
 }
 
 export async function logout() {
-  await fetch("/api/auth/logout", { method: "POST" });
-  window.location.href = "/login";
+  try {
+    await fetch("/api/auth/logout", {
+      method: "POST",
+      credentials: "same-origin",
+      cache: "no-store",
+    });
+  } finally {
+    window.location.replace("/login");
+  }
 }

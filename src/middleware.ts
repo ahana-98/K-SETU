@@ -11,37 +11,55 @@ export async function middleware(req: NextRequest) {
   const session = await verifySession(token);
   const { pathname } = req.nextUrl;
 
-  const guard = (allowed: string) => {
-    if (!session) {
-      const url = req.nextUrl.clone();
-      url.pathname = "/login";
-      return NextResponse.redirect(url);
-    }
-    if (session.role !== allowed) {
-      const url = req.nextUrl.clone();
-      url.pathname = roleHome(session.role);
-      return NextResponse.redirect(url);
-    }
-    return null;
+  const noCache = (response: NextResponse) => {
+    response.headers.set(
+      "Cache-Control",
+      "no-store, no-cache, must-revalidate, proxy-revalidate"
+    );
+    response.headers.set("Pragma", "no-cache");
+    response.headers.set("Expires", "0");
+    return response;
   };
 
-  if (pathname.startsWith("/collector")) return guard("collector") ?? NextResponse.next();
-  if (pathname.startsWith("/recycler")) return guard("recycler") ?? NextResponse.next();
-  if (pathname.startsWith("/admin")) return guard("admin") ?? NextResponse.next();
+  const redirectTo = (path: string) => {
+    const url = req.nextUrl.clone();
+    url.pathname = path;
+    return noCache(NextResponse.redirect(url));
+  };
+
+  const guard = (allowed: "collector" | "recycler" | "admin") => {
+    if (!session) {
+      return redirectTo("/login");
+    }
+
+    if (session.role !== allowed) {
+      return redirectTo(roleHome(session.role));
+    }
+
+    return noCache(NextResponse.next());
+  };
+
+  if (pathname.startsWith("/collector")) {
+    return guard("collector");
+  }
+
+  if (pathname.startsWith("/recycler")) {
+    return guard("recycler");
+  }
+
+  if (pathname.startsWith("/admin")) {
+    return guard("admin");
+  }
 
   if (pathname === "/login") {
     if (session) {
-      const url = req.nextUrl.clone();
-      url.pathname = roleHome(session.role);
-      return NextResponse.redirect(url);
+      return redirectTo(roleHome(session.role));
     }
-    return NextResponse.next();
+    return noCache(NextResponse.next());
   }
 
   if (pathname === "/") {
-    const url = req.nextUrl.clone();
-    url.pathname = session ? roleHome(session.role) : "/login";
-    return NextResponse.redirect(url);
+    return redirectTo(session ? roleHome(session.role) : "/login");
   }
 
   return NextResponse.next();

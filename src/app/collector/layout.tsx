@@ -7,6 +7,7 @@ import { useLang, LANGS, type Lang } from "@/lib/i18n";
 import { useSync } from "@/lib/offline";
 import { useToast } from "@/components/ui";
 import VoiceAssistant from "@/components/VoiceAssistant";
+import SessionGuard from "@/components/SessionGuard";
 const NAV = [
   { href: "/collector", icon: "home", key: "nav.home", exact: true },
   { href: "/collector/sell", icon: "sell", key: "nav.sell" },
@@ -31,6 +32,7 @@ export default function CollectorLayout({ children }: { children: React.ReactNod
   };
 
   return (
+    <SessionGuard>
     <div className="min-h-screen bg-paper">
       <div className="mx-auto flex min-h-screen w-full max-w-md flex-col bg-paper shadow-[0_0_40px_rgba(22,60,51,0.06)]">
         {/* Top bar */}
@@ -82,5 +84,6 @@ export default function CollectorLayout({ children }: { children: React.ReactNod
         <VoiceAssistant mode="collector" />
       </div>
     </div>
+    </SessionGuard>
   );
 }

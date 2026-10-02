@@ -100,14 +100,20 @@ export async function POST(req: Request) {
       name: user.name,
     });
 
-    response.cookies.set(SESSION_COOKIE, session, {
-      httpOnly: true,
-      sameSite: "lax",
-      secure: process.env.NODE_ENV === "production",
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60,
-    });
+const proto =
+  req.headers.get("x-forwarded-proto") ||
+  new URL(req.url).protocol.replace(":", "");
 
+const secure = proto === "https";
+
+response.cookies.set(SESSION_COOKIE, session, {
+  httpOnly: true,
+  sameSite: secure ? "none" : "lax",
+  secure,
+  partitioned: secure,
+  path: "/",
+  maxAge: 60 * 60 * 24 * 7,
+});
     return response;
   } catch (error) {
     console.error("OTP verification error:", error);
