@@ -120,21 +120,42 @@ if (gpsLocation) {
  // eslint-disable-next-line react-hooks/set-state-in-effect
 useEffect(load, [load]);
 
-  async function request(lot: Lot, rec: Rec) {
-    setBusy(rec.recyclerUserId);
-    try {
-      await api(`/lots/${lot.id}/request-quote`, { method: "POST", body: JSON.stringify({ recyclerUserId: rec.recyclerUserId }) });
-      push(`${t("lot.requested")} — ${rec.name}`, "ok");
-      setQuoteFor(null);
-    } catch (e: any) {
-      push(e.message, "danger");
-    } finally {
-      setBusy(null);
-    }
+async function request(lot: Lot, rec: Rec) {
+  setBusy(lot.id);
+  try {
+    await api(`/lots/${lot.id}/request-quote`, {
+      method: "POST",
+      body: JSON.stringify({
+        recyclerUserId: rec.recyclerUserId,
+      }),
+    });
+
+    // Update only the lot that was selected.
+    setMyLots((prev) =>
+      prev.map((item) =>
+        item.id === lot.id
+          ? { ...item, status: "open" }
+          : item
+      )
+    );
+
+    push(`${t("lot.requested")} — ${rec.name}`, "ok");
+    setQuoteFor(null);
+  } catch (e: any) {
+    push(e.message, "danger");
+  } finally {
+    setBusy(null);
   }
-
-  const matchingLots = quoteFor ? myLots.filter((l) => l.category === category || true) : [];
-
+}
+const matchingLots = quoteFor
+  ? myLots.filter((lot) =>
+      quoteFor.materialsAccepted.some(
+        (material) =>
+          material.trim().toLowerCase() ===
+          lot.category.trim().toLowerCase()
+      )
+    )
+  : [];
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -210,9 +231,14 @@ useEffect(load, [load]);
                 <p className="text-[10px] uppercase tracking-wide text-sage">{t("rec.rate")}</p>
                 <p className="text-lg font-extrabold text-forest">{formatINR(r.offeredRate)} <span className="text-[10px] text-sage">{t("common.perKg")}</span></p>
               </div>
-              <Btn size="sm" onClick={() => setQuoteFor(r)}><Icon name="factory" size={15} /> {t("rec.requestQuote")}</Btn>
-            </div>
-          </Card>
+              </div>
+<Btn
+  size="sm"
+  disabled={busy !== null || myLots.length === 0}
+  onClick={() => setQuoteFor(r)}
+>
+  {t("rec.requestQuote")}
+</Btn>          </Card>
         ))}
       </div>
 
@@ -232,10 +258,13 @@ useEffect(load, [load]);
                       <p className="text-sm font-extrabold text-ink">{l.lotCode}</p>
                       <p className="text-[11px] text-sage">{l.category} • {l.weightKg} kg</p>
                     </div>
-                    <Btn size="sm" disabled={busy !== null} onClick={() => request(l, quoteFor)}>
-                      {busy === quoteFor.recyclerUserId ? <Spinner /> : t("rec.requestQuote")}
-                    </Btn>
-                  </div>
+<Btn
+  size="sm"
+  disabled={busy !== null}
+  onClick={() => request(l, quoteFor)}
+>
+  {busy === l.id ? <Spinner /> : t("rec.requestQuote")}
+</Btn>                  </div>
                 ))}
               </div>
             ) : (
