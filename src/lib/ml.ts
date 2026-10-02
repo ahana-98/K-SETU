@@ -126,43 +126,39 @@ export function classifyMaterial(input: {
   imageSignature?: string;
   hint?: string;
 }): ClassificationResult {
-  const name = (input.fileName || "").toLowerCase();
-  let matched: string | null = null;
-  for (const [cat, words] of Object.entries(KEYWORDS)) {
-    if (words.some((w) => name.includes(w))) {
-      matched = cat;
-      break;
+  const name = (input.fileName || "").toLowerCase().trim();
+
+  // Prefer a matching filename keyword.
+  for (const [category, words] of Object.entries(KEYWORDS)) {
+    if (words.some((word) => name.includes(word))) {
+      return {
+        engine: "prototype-heuristic",
+        category,
+        confidence: 0.85,
+        alternatives: [],
+        note: "Prototype keyword-based classification. Please verify the material manually.",
+      };
     }
   }
-  const sig = input.imageSignature || input.hint || name || "ksetu";
-  const h = hashStr(sig);
 
-  let category: string;
-  let confidence: number;
-  if (matched) {
-    category = matched;
-    confidence = 0.88 + (h % 8) / 100; // 0.88–0.95
-  } else if (input.hint && KEYWORDS[input.hint]) {
-    category = input.hint;
-    confidence = 0.8 + (h % 10) / 100;
-  } else {
-    category = CATEGORIES[h % CATEGORIES.length].key;
-    confidence = 0.72 + (h % 14) / 100; // 0.72–0.85
+  // Use a valid manually selected category if available.
+  if (input.hint && KEYWORDS[input.hint]) {
+    return {
+      engine: "prototype-heuristic",
+      category: input.hint,
+      confidence: 0.9,
+      alternatives: [],
+      note: "Material selected manually. Please verify before submitting.",
+    };
   }
-  confidence = Math.min(0.97, confidence);
-  const rest = 1 - confidence;
-  const others = CATEGORIES.filter((c) => c.key !== category);
-  const alt1 = others[h % others.length].key;
-  const alt2 = others[(h + 3) % others.length].key;
+
+  // Do not guess a category from the image hash.
   return {
     engine: "prototype-heuristic",
-    category,
-    confidence: Number(confidence.toFixed(2)),
-    alternatives: [
-      { category: alt1, confidence: Number((rest * 0.6).toFixed(2)) },
-      { category: alt2, confidence: Number((rest * 0.4).toFixed(2)) },
-    ],
-    note: "Prototype heuristic inference (demo). A trained MobileNetV3/OpenCV model can be integrated behind this interface.",
+    category: "Other E-Waste",
+    confidence: 0.5,
+    alternatives: [],
+    note: "No reliable keyword match. Please select the material category manually.",
   };
 }
 export function detectCategoryAnomaly(params: {
