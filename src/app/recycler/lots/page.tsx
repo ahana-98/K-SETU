@@ -38,7 +38,7 @@ useEffect(() => {
 
   const firstLoad = setTimeout(runLoad, 0);
 
-  const interval = setInterval(runLoad, 5000);
+  const interval = setInterval(runLoad, 60000);
 
   return () => {
     clearTimeout(firstLoad);
