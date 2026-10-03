@@ -4,10 +4,9 @@ import { useRef, useState } from "react";
 import { useLang, type Lang } from "@/lib/i18n";
 
 type VoiceAssistantProps = {
-  mode?: "login" | "collector";
+  mode?: "login" | "collector" | "recycler";
   onRoleSelect?: (role: "collector" | "recycler" | "admin") => void;
 };
-
 type SpeechRecognitionResultEvent = Event & {
   results: {
     [index: number]: {
@@ -235,13 +234,20 @@ const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
         return;
       }
 
-      if (
-        normalized.includes("recycler") ||
-        normalized.includes("रीसायक्लर") ||
-        normalized.includes("रिसायकलर") ||
-        normalized.includes("रीसायकलर")
-      ) {
-        const text =
+if (
+  normalized.includes("recycler") ||
+  normalized.includes("रीसायक्लर") ||
+  normalized.includes("रिसायकलर") ||
+  normalized.includes("रीसायकलर") ||
+  normalized.includes("रीसाइकलर") ||
+  normalized.includes("रिसाइकलर") ||
+  normalized.includes("रीसायकल") ||
+  normalized.includes("रिसायकल") ||
+  normalized.includes("रीसाइक्लर") ||
+  normalized.includes("रिसाइक्लर") ||
+  normalized.includes("रीसायक्ल") ||
+  normalized.includes("रिसायक्ल")
+) {         const text =
           lang === "hi"
             ? "रीसायक्लर चुना गया है।"
             : lang === "mr"
@@ -289,6 +295,150 @@ const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
       setMessage(retry);
       speak(retry);
+
+      return;
+    }
+    /*
+     * RECYCLER MODE
+     */
+
+    if (mode === "recycler") {
+      if (
+        normalized.includes("incoming") ||
+        normalized.includes("lot") ||
+        normalized.includes("lots") ||
+        normalized.includes("इनकमिंग") ||
+        normalized.includes("लॉट") ||
+        normalized.includes("लॉट्स") ||
+        normalized.includes("आवक") ||
+        normalized.includes("आलेले") ||
+        normalized.includes("लॉट")
+      ) {
+        const text =
+          lang === "hi"
+            ? "आने वाले लॉट का पेज खोल रहा हूँ।"
+            : lang === "mr"
+              ? "येणाऱ्या लॉटचे पेज उघडत आहे."
+              : "Opening incoming lots.";
+
+        setMessage(text);
+        speak(text);
+
+        window.location.href = "/recycler/lots";
+        return;
+      }
+
+      if (
+        normalized.includes("quote") ||
+        normalized.includes("quotes") ||
+        normalized.includes("कोट") ||
+        normalized.includes("कोटेशन") ||
+        normalized.includes("दर") ||
+        normalized.includes("भाव")
+      ) {
+        const text =
+          lang === "hi"
+            ? "आपके कोट रिक्वेस्ट का पेज खोल रहा हूँ।"
+            : lang === "mr"
+              ? "तुमच्या कोट रिक्वेस्टचे पेज उघडत आहे."
+              : "Opening your quote requests.";
+
+        setMessage(text);
+        speak(text);
+
+        window.location.href = "/recycler/quotes";
+        return;
+      }
+
+      if (
+        normalized.includes("handover") ||
+        normalized.includes("handovers") ||
+        normalized.includes("हैंडओवर") ||
+        normalized.includes("हँडओव्हर")
+      ) {
+        const text =
+          lang === "hi"
+            ? "हैंडओवर का पेज खोल रहा हूँ।"
+            : lang === "mr"
+              ? "हँडओव्हरचे पेज उघडत आहे."
+              : "Opening handovers.";
+
+        setMessage(text);
+        speak(text);
+
+        window.location.href = "/recycler/handovers";
+        return;
+      }
+
+      if (
+        normalized.includes("transaction") ||
+        normalized.includes("transactions") ||
+        normalized.includes("लेनदेन") ||
+        normalized.includes("व्यवहार")
+      ) {
+        const text =
+          lang === "hi"
+            ? "आपके लेनदेन का पेज खोल रहा हूँ।"
+            : lang === "mr"
+              ? "तुमचे व्यवहाराचे पेज उघडत आहे."
+              : "Opening your transactions.";
+
+        setMessage(text);
+        speak(text);
+
+        window.location.href = "/recycler/transactions";
+        return;
+      }
+
+      if (
+        normalized.includes("profile") ||
+        normalized.includes("प्रोफाइल") ||
+        normalized.includes("प्रोफाईल")
+      ) {
+        const text =
+          lang === "hi"
+            ? "आपकी प्रोफाइल खोल रहा हूँ।"
+            : lang === "mr"
+              ? "तुमची प्रोफाइल उघडत आहे."
+              : "Opening your profile.";
+
+        setMessage(text);
+        speak(text);
+
+        window.location.href = "/recycler/profile";
+        return;
+      }
+
+      if (
+        normalized.includes("home") ||
+        normalized.includes("होम") ||
+        normalized.includes("मुख्य") ||
+        normalized.includes("डैशबोर्ड") ||
+        normalized.includes("डॅशबोर्ड")
+      ) {
+        const text =
+          lang === "hi"
+            ? "रीसायक्लर होम खोल रहा हूँ।"
+            : lang === "mr"
+              ? "रीसायक्लर होम उघडत आहे."
+              : "Opening the Recycler home.";
+
+        setMessage(text);
+        speak(text);
+
+        window.location.href = "/recycler";
+        return;
+      }
+
+      const help =
+        lang === "hi"
+          ? "आप कह सकते हैं: आने वाले लॉट दिखाओ, कोट रिक्वेस्ट दिखाओ, हैंडओवर खोलो, लेनदेन दिखाओ या प्रोफाइल खोलो।"
+          : lang === "mr"
+            ? "तुम्ही म्हणू शकता: येणारे लॉट दाखव, कोट रिक्वेस्ट दाखव, हँडओव्हर उघड, व्यवहार दाखव किंवा प्रोफाइल उघड."
+            : "You can say: show incoming lots, show quote requests, open handovers, show transactions, or open profile.";
+
+      setMessage(help);
+      speak(help);
 
       return;
     }
@@ -494,6 +644,7 @@ const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
       };
 
       recognition.onerror = (event) => {
+        console.log("VOICE ERROR:", event.error);
         const error = event.error || "";
 
         if (error === "not-allowed" || error === "service-not-allowed") {

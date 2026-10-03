@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { Icon, Logo, logout } from "@/components/ui";
 import { useLang } from "@/lib/i18n";
 import SessionGuard from "@/components/SessionGuard";
+import VoiceAssistant from "@/components/VoiceAssistant";
 
 const NAV = [
   { href: "/recycler", icon: "home", key: "recy.dashboard", exact: true },
@@ -65,6 +66,7 @@ export default function RecyclerLayout({ children }: { children: React.ReactNode
 
         <main className="flex-1 px-4 py-5 sm:px-6 lg:px-8">{children}</main>
       </div>
+      <VoiceAssistant mode="recycler" />
     </div>
     </SessionGuard>
   );
