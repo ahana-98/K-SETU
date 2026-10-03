@@ -19,18 +19,28 @@ export default function IncomingLotsPage() {
   const [err, setErr] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [seenLots, setSeenLots] = useState<number[]>(() => {
+  if (typeof window === "undefined") return [];
 
-  const load = useCallback(() => {
-    setLoading(true);
-    setErr(null);
-    Promise.all([api<Lot[]>("/lots"), api<Quote[]>("/quotes")])
-      .then(([l, q]) => {
-        setLots(l);
-        setMyQuotes(q);
-      })
-      .catch((e) => setErr(e.message))
-      .finally(() => setLoading(false));
-  }, []);
+  try {
+    const saved = localStorage.getItem("recycler_seen_lots");
+    return saved ? JSON.parse(saved) : [];
+  } catch {
+    return [];
+  }
+});const load = useCallback(() => {
+  setLoading(true);
+  setErr(null);
+
+  Promise.all([api<Lot[]>("/lots"), api<Quote[]>("/quotes")])
+    .then(([l, q]) => {
+      setLots(l);
+      setMyQuotes(q);
+    })
+    .catch((e) => setErr(e.message))
+    .finally(() => setLoading(false));
+}, []);
+
 useEffect(() => {
   const runLoad = () => {
     load();
@@ -44,7 +54,23 @@ useEffect(() => {
     clearTimeout(firstLoad);
     clearInterval(interval);
   };
-}, [load]);  async function submit() {
+}, [load]);
+function markLotSeen(lotId: number) {
+  setSeenLots((current) => {
+    if (current.includes(lotId)) return current;
+
+    const updated = [...current, lotId];
+
+    try {
+      localStorage.setItem("recycler_seen_lots", JSON.stringify(updated));
+    } catch {
+      // Ignore localStorage errors
+    }
+
+    return updated;
+  });
+}
+ async function submit() {
     if (!open) return;
     if (!(Number(rate) > 0)) {
       push("Rate must be positive", "danger");
@@ -81,14 +107,27 @@ load();
           const isOpen = open === l.id;
           return (
             <Card key={l.id} className="overflow-hidden">
-              <button className="flex w-full items-center gap-3 p-3.5 text-left" onClick={() => setOpen(isOpen ? null : l.id)}>
-                {l.imageData ? (
+<button
+  className="flex w-full items-center gap-3 p-3.5 text-left"
+  onClick={() => {
+    if (!isOpen) {
+      markLotSeen(l.id);
+    }
+    setOpen(isOpen ? null : l.id);
+  }}
+>                {l.imageData ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={l.imageData} alt="" className="h-14 w-14 rounded-lg border border-[#dcebe0] object-cover" />
                 ) : (
                   <span className="rounded-lg bg-mint p-3 text-pine"><Icon name={CATEGORY_ICONS[l.category] ?? "box"} size={24} /></span>
                 )}
                 <div className="min-w-0 flex-1">
+                  {!seenLots.includes(l.id) && (
+  <span
+    className="mr-1.5 inline-block h-2 w-2 rounded-full bg-pine align-middle"
+    title="New lot"
+  />
+)}
                   <p className="truncate text-sm font-extrabold text-ink">{l.lotCode}</p>
                   <p className="text-[11px] text-sage">{l.category} • {l.weightKg} kg • {l.collectionLocation}</p>
                   <p className="text-[10px] text-sage">Condition: {l.condition} • Est. {formatINR(l.estimatedValue)}</p>

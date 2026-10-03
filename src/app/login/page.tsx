@@ -442,9 +442,37 @@ const [password, setPassword] = useState("");
               </Btn>
             </div>
 
+<div className="mt-5">
+  <button
+    type="button"
+    className="w-full rounded-xl border border-mint bg-mint/40 px-4 py-3 text-sm font-extrabold text-forest transition hover:bg-mint/60"
+    onClick={() => {
+      // Guidelines document will be connected here later
+      alert("K-Setu Guidelines will be available here soon.");
+    }}
+  >
+    📖 Read K-Setu Guidelines
+  </button>
+</div>
             <p className="mt-3 text-center text-[10px] text-sage">
               OTP login is enabled for registered mobile numbers.
             </p>
+            <div className="mt-5 rounded-xl border border-mint bg-mint/40 p-4">
+  <div className="mb-2 flex items-center gap-2">
+    <Icon name="shield" size={16} />
+    <h2 className="text-sm font-extrabold text-forest">
+      K-Setu Guidelines
+    </h2>
+  </div>
+
+  <ul className="space-y-1.5 text-xs leading-relaxed text-sage">
+    <li>• Enter accurate information while using K-Setu.</li>
+    <li>• Handle recyclable materials safely and responsibly.</li>
+    <li>• Never share your OTP or password with anyone.</li>
+    <li>• Provide genuine material and lot information.</li>
+    <li>• Demo accounts and data are for demonstration purposes only.</li>
+  </ul>
+</div>
           </Card>
         </div>
       </div>
