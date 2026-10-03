@@ -31,10 +31,20 @@ export default function IncomingLotsPage() {
       .catch((e) => setErr(e.message))
       .finally(() => setLoading(false));
   }, []);
- // eslint-disable-next-line react-hooks/set-state-in-effect
-useEffect(load, [load]);
+useEffect(() => {
+  const runLoad = () => {
+    load();
+  };
 
-  async function submit() {
+  const firstLoad = setTimeout(runLoad, 0);
+
+  const interval = setInterval(runLoad, 5000);
+
+  return () => {
+    clearTimeout(firstLoad);
+    clearInterval(interval);
+  };
+}, [load]);  async function submit() {
     if (!open) return;
     if (!(Number(rate) > 0)) {
       push("Rate must be positive", "danger");
