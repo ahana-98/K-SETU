@@ -4,7 +4,7 @@ import { Btn, Card, DemoTag, Empty, Field, Icon, Spinner, inputCls, useToast } f
 import { useLang, formatINR } from "@/lib/i18n";
 import { api } from "@/components/ui";
 
-const TABS = ["Unit Economics", "Field Research", "Datasets", "Safety"] as const;
+const TABS = ["Unit Economics", "Datasets", "Safety"] as const;
 type Tab = (typeof TABS)[number];
 
 const UE_FIELDS: { key: string; label: string }[] = [
@@ -21,25 +21,28 @@ export default function InsightsPage() {
   const { push } = useToast();
   const [tab, setTab] = useState<Tab>("Unit Economics");
   const [ue, setUe] = useState<Record<string, any>>({});
-  const [fr, setFr] = useState<any[]>([]);
   const [safety, setSafety] = useState<any[]>([]);
-  const [form, setForm] = useState({ participantRef: "", generalLocation: "", materialHandled: "", currentProcess: "", priceAwareness: "", formalAwareness: "", challenges: "" });
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const load = useCallback(() => {
-    setLoading(true);
-    Promise.all([api<any[]>("/admin/settings"), api<any[]>("/admin/field-research"), api<any[]>("/safety?lang=en")])
-      .then(([settings, frRows, safetyRows]) => {
-        const ueRow = (settings as any[]).find((s: any) => s.key === "unit_economics");
-        setUe(ueRow?.value ?? {});
-        setFr(frRows);
-        setSafety(safetyRows);
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
-  }, []);
-  // eslint-disable-next-line react-hooks/set-state-in-effect
+const load = useCallback(() => {
+  setLoading(true);
+
+  Promise.all([
+    api<any[]>("/admin/settings"),
+    api<any[]>("/safety?lang=en"),
+  ])
+    .then(([settings, safetyRows]) => {
+      const ueRow = (settings as any[]).find(
+        (s: any) => s.key === "unit_economics"
+      );
+
+      setUe(ueRow?.value ?? {});
+      setSafety(safetyRows);
+    })
+    .catch(() => {})
+    .finally(() => setLoading(false));
+}, []);  // eslint-disable-next-line react-hooks/set-state-in-effect
 useEffect(load, [load]);
 
   async function saveUe() {
@@ -47,24 +50,6 @@ useEffect(load, [load]);
     try {
       await api("/admin/settings", { method: "POST", body: JSON.stringify({ key: "unit_economics", label: "Unit economics assumptions (DEMO DATA)", value: { ...ue, note: "ASSUMPTION — hypothetical values for prototype demonstration, not field research." } }) });
       push("Saved", "ok");
-    } catch (e: any) {
-      push(e.message, "danger");
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  async function addFr() {
-    if (!form.participantRef || !form.generalLocation || !form.materialHandled) {
-      push("Fill required fields", "warn");
-      return;
-    }
-    setBusy(true);
-    try {
-      await api("/admin/field-research", { method: "POST", body: JSON.stringify(form) });
-      push("Field note recorded", "ok");
-      setForm({ participantRef: "", generalLocation: "", materialHandled: "", currentProcess: "", priceAwareness: "", formalAwareness: "", challenges: "" });
-      load();
     } catch (e: any) {
       push(e.message, "danger");
     } finally {
@@ -98,36 +83,6 @@ useEffect(load, [load]);
           </div>
           <Btn onClick={saveUe} disabled={busy}>{busy ? <Spinner /> : <Icon name="check" size={15} />} Save assumptions</Btn>
         </Card>
-      )}
-
-      {!loading && tab === "Field Research" && (
-        <div className="space-y-4">
-          <Card className="space-y-3 p-5">
-            <p className="text-xs font-bold text-warn">Our team must conduct real field research with at least two working scrap collectors/aggregators. Entries below are SAMPLES until replaced.</p>
-            <div className="grid gap-3 sm:grid-cols-2">
-              <Field label="Participant reference *"><input className={inputCls} value={form.participantRef} onChange={(e) => setForm((s) => ({ ...s, participantRef: e.target.value }))} placeholder="FR-003" /></Field>
-              <Field label="General location *"><input className={inputCls} value={form.generalLocation} onChange={(e) => setForm((s) => ({ ...s, generalLocation: e.target.value }))} /></Field>
-              <Field label="Material handled *"><input className={inputCls} value={form.materialHandled} onChange={(e) => setForm((s) => ({ ...s, materialHandled: e.target.value }))} /></Field>
-              <Field label="Current process"><input className={inputCls} value={form.currentProcess} onChange={(e) => setForm((s) => ({ ...s, currentProcess: e.target.value }))} /></Field>
-              <Field label="Price awareness"><input className={inputCls} value={form.priceAwareness} onChange={(e) => setForm((s) => ({ ...s, priceAwareness: e.target.value }))} /></Field>
-              <Field label="Formal recycling awareness"><input className={inputCls} value={form.formalAwareness} onChange={(e) => setForm((s) => ({ ...s, formalAwareness: e.target.value }))} /></Field>
-            </div>
-            <Field label="Challenges / pain points"><textarea className={inputCls} rows={2} value={form.challenges} onChange={(e) => setForm((s) => ({ ...s, challenges: e.target.value }))} /></Field>
-            <Btn onClick={addFr} disabled={busy}>{busy ? <Spinner /> : <Icon name="plus" size={15} />} Record field note</Btn>
-          </Card>
-          {fr.length ? fr.map((r) => (
-            <Card key={r.id} className="p-4">
-              <div className="flex items-center justify-between">
-                <p className="text-sm font-extrabold text-ink">{r.participantRef} <DemoTag>SAMPLE</DemoTag></p>
-                <p className="text-[11px] text-sage">{new Date(r.recordedAt).toLocaleDateString("en-IN")}</p>
-              </div>
-              <p className="mt-1 text-xs text-sage">{r.generalLocation} • {r.materialHandled}</p>
-              <p className="mt-1 text-xs text-ink">{r.currentProcess}</p>
-              <p className="text-xs text-ink">Price awareness: {r.priceAwareness} • Formal awareness: {r.formalAwareness}</p>
-              <p className="text-xs text-warn">{r.challenges}</p>
-            </Card>
-          )) : <Empty text={t("common.noData")} />}
-        </div>
       )}
 
       {!loading && tab === "Datasets" && (
