@@ -85,12 +85,6 @@ export default function ProfilePage() {
         </div>
       </Card>
 
-      <Card className="p-4">
-        <h2 className="mb-1 text-xs font-bold uppercase tracking-widest text-sage">{t("profile.about")}</h2>
-        <p className="text-xs leading-relaxed text-sage">
-          K-SETU is a Smart India Hackathon 2026 prototype connecting informal e-waste collectors with authorized recyclers. All prices, recyclers and transactions shown are <DemoTag>DEMO DATA</DemoTag>. ML outputs are <DemoTag>ML PROTOTYPE</DemoTag> heuristics.
-        </p>
-      </Card>
 
       <Btn full variant="danger" onClick={logout}><Icon name="logout" size={16} /> {t("common.logout")}</Btn>
     </div>
