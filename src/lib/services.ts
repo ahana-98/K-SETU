@@ -63,17 +63,18 @@ export async function priceFor(category: string, location: string) {
 
 export async function priceHistory(category: string, location: string, days: number) {
   const since = new Date(Date.now() - days * 86400_000);
-  const rows = await db
-    .select()
-    .from(s.priceHistory)
-    .where(and(eq(s.priceHistory.category, category), eq(s.priceHistory.location, location), gte(s.priceHistory.date, since)));
-  if (rows.length) return rows;
+
   return db
     .select()
     .from(s.priceHistory)
-    .where(and(eq(s.priceHistory.category, category), gte(s.priceHistory.date, since)));
+    .where(
+      and(
+        eq(s.priceHistory.category, category),
+        eq(s.priceHistory.location, location),
+        gte(s.priceHistory.date, since)
+      )
+    );
 }
-
 // ---------- Lots ----------
 export async function nextLotCode() {
   const r = await db.select({ c: sql<number>`count(*)::int` }).from(s.lots);

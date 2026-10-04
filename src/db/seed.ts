@@ -187,23 +187,47 @@ if (settingsRows.length === 0) {
   }
 
   // ---- Prices + history ----
-  for (const c of CATEGORIES) {
-    for (const loc of ["Pune", "Mumbai", "Nashik"]) {
-      const base = BASE_RATES[c.key];
-      const jitter = 0.92 + r() * 0.16;
-      const buying = Math.round(base * jitter);
-      const trend = r() > 0.6 ? "up" : r() > 0.4 ? "down" : "stable";
-      await db.insert(s.prices).values({ category: c.key, location: loc, buyingRate: buying, minRate: Math.round(buying * 0.88), maxRate: Math.round(buying * 1.12), unit: "kg", trend });
-      // 13 weekly points over ~90 days
-      let rate = buying * (0.86 + r() * 0.08);
-      for (let w = 12; w >= 0; w--) {
-        rate = rate * (1 + (r() - 0.47) * 0.04);
-        rate = Math.max(base * 0.6, Math.min(base * 1.4, rate));
-        await db.insert(s.priceHistory).values({ category: c.key, location: loc, date: daysAgo(w * 7), rate: Math.round(rate) });
-      }
+for (const c of CATEGORIES) {
+  for (const loc of LOCATIONS) {
+    const base = BASE_RATES[c.key];
+    const jitter = 0.92 + r() * 0.16;
+    const buying = Math.round(base * jitter);
+    const trend = r() > 0.6 ? "up" : r() > 0.4 ? "down" : "stable";
+
+    await db.insert(s.prices).values({
+      category: c.key,
+      location: loc,
+      buyingRate: buying,
+      minRate: Math.round(buying * 0.88),
+      maxRate: Math.round(buying * 1.12),
+      unit: "kg",
+      trend,
+    });
+
+    // 13 weekly points over ~90 days, centered around the current buying rate.
+    let rate = buying;
+    const history: number[] = [];
+
+    for (let w = 0; w < 13; w++) {
+      const variation = 1 + (r() - 0.5) * 0.08;
+      rate = rate * variation;
+      rate = Math.max(base * 0.6, Math.min(base * 1.4, rate));
+      history.push(Math.round(rate));
+    }
+
+    // Keep the latest historical point aligned with today's displayed rate.
+    history[history.length - 1] = buying;
+
+    for (let w = 12; w >= 0; w--) {
+      await db.insert(s.priceHistory).values({
+        category: c.key,
+        location: loc,
+        date: daysAgo(w * 7),
+        rate: history[12 - w],
+      });
     }
   }
-
+}
   // ---- Lots + transactions + ledger + trace ----
   const conds = ["good", "used", "damaged", "mixed", "unknown"];
   let lotSeq = 124;
