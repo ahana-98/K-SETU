@@ -204,8 +204,15 @@ const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
    * This prevents the ESLint "accessed before declared" error.
    */
   function handleCommand(command: string) {
-    const normalized = command.toLowerCase().trim();
+const normalized = command
+  .toLowerCase()
+  .normalize("NFKC")
+  .replace(/[-‐-‒–—]/g, " ")
+  .replace(/[.,!?।]/g, " ")
+  .replace(/\s+/g, " ")
+  .trim();
 
+const compact = normalized.replace(/\s+/g, "");
     /*
      * LOGIN MODE
      */
@@ -447,14 +454,18 @@ if (
      * COLLECTOR MODE
      */
 
-    if (
-      normalized.includes("sell") ||
-      normalized.includes("बेच") ||
-      normalized.includes("विक") ||
-      normalized.includes("कचरा विक") ||
-      normalized.includes("विकायचा")
-    ) {
-      const text =
+if (
+  normalized.includes("sell") ||
+  normalized.includes("e waste") ||
+  compact.includes("ewaste") ||
+  normalized.includes("बेच") ||
+  normalized.includes("विक") ||
+  normalized.includes("कचरा बेच") ||
+  normalized.includes("कचरा विक") ||
+  normalized.includes("ई कचरा") ||
+  normalized.includes("विकायचा")
+) {  
+   const text =
         lang === "hi"
           ? "ई-कचरा बेचने वाले पेज पर जा रहे हैं।"
           : lang === "mr"
@@ -490,14 +501,15 @@ if (
       return;
     }
 
-    if (
-      normalized.includes("recycler") ||
-      normalized.includes("रीसायक्लर") ||
-      normalized.includes("रिसायकलर") ||
-      normalized.includes("रीसायकलर") ||
-      normalized.includes("recycle")
-    ) {
-      const text =
+if (
+  normalized.includes("recycler") ||
+  normalized.includes("recycle") ||
+  normalized.includes("रीसायक") ||
+  normalized.includes("रिसायक") ||
+  normalized.includes("रीसाइ") ||
+  normalized.includes("रिसाइ")
+) {
+        const text =
         lang === "hi"
           ? "रीसायक्लर खोजने वाला पेज खोल रहा हूँ।"
           : lang === "mr"
