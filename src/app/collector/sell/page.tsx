@@ -299,7 +299,7 @@ export default function SellPage() {
 
       setCls(res);
 
-      if (!category) {
+      if (!category && res.confidence >= 0.8 && res.category !== "Other E-Waste") {
         setCategory(res.category);
       }
     } catch (e: any) {
