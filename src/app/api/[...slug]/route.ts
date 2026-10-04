@@ -211,12 +211,6 @@ async function handlePost(req: Request, slug: string[], body: any, session: Sess
     const method = ["cash", "upi", "other"].includes(body?.method) ? body.method : "cash";
     return svc.recordPayment(Number(slug[1]), s.sub, method);
   }
-  if (path === "sync") {
-    needRole(session, "collector");
-    const items = z.array(lotSchema).max(50).parse(body?.lots ?? []);
-    const created = await svc.syncLots(items.map((i) => ({ ...i, collectorId: s.sub })));
-    return { synced: created.length, lots: created };
-  }
   if (path === "ml/classify") {
     return { ...svc.classifyMaterial({ fileName: body?.fileName, imageSignature: body?.imageSignature, hint: body?.hint }), label: "ML PROTOTYPE" };
   }

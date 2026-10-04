@@ -713,7 +713,6 @@ async function handleMapLocation(coordinates: string) {
                 value={condition}
 onChange={(e) => {
   setLocation(e.target.value);
-  setGps(null);
 }}              >
                 {CONDITIONS.map((c) => (
                   <option key={c} value={c}>

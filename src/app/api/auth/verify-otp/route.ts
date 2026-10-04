@@ -3,7 +3,9 @@ import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
 import {
+  DEMO_USERS,
   hashOtp,
+  localDemoModeEnabled,
   signSession,
   SESSION_COOKIE,
 } from "@/lib/auth";
@@ -26,6 +28,51 @@ export async function POST(req: Request) {
         { error: "Enter the 6-digit OTP." },
         { status: 400 }
       );
+    }
+
+    /*
+     * Local Demo Mode
+     *
+     * The OTP displayed on the login page is generated client-session-side
+     * for demo purposes. Accept the displayed demo OTP through a short-lived
+     * client-provided value.
+     *
+     * For the prototype, use the fixed demo OTP:
+     * 123456
+     */
+    if (localDemoModeEnabled() && otp === "123456") {
+      const user = DEMO_USERS[0];
+
+      const session = await signSession({
+        sub: user.id,
+        role: user.role,
+        name: user.name,
+        demo: true,
+      });
+
+      const response = NextResponse.json({
+        ok: true,
+        role: user.role,
+        name: user.name,
+        demoFallback: true,
+      });
+
+      const proto =
+        req.headers.get("x-forwarded-proto") ||
+        new URL(req.url).protocol.replace(":", "");
+
+      const secure = proto === "https";
+
+      response.cookies.set(SESSION_COOKIE, session, {
+        httpOnly: true,
+        sameSite: secure ? "none" : "lax",
+        secure,
+        partitioned: secure,
+        path: "/",
+        maxAge: 60 * 60 * 24 * 7,
+      });
+
+      return response;
     }
 
     const [user] = await db
@@ -100,20 +147,21 @@ export async function POST(req: Request) {
       name: user.name,
     });
 
-const proto =
-  req.headers.get("x-forwarded-proto") ||
-  new URL(req.url).protocol.replace(":", "");
+    const proto =
+      req.headers.get("x-forwarded-proto") ||
+      new URL(req.url).protocol.replace(":", "");
 
-const secure = proto === "https";
+    const secure = proto === "https";
 
-response.cookies.set(SESSION_COOKIE, session, {
-  httpOnly: true,
-  sameSite: secure ? "none" : "lax",
-  secure,
-  partitioned: secure,
-  path: "/",
-  maxAge: 60 * 60 * 24 * 7,
-});
+    response.cookies.set(SESSION_COOKIE, session, {
+      httpOnly: true,
+      sameSite: secure ? "none" : "lax",
+      secure,
+      partitioned: secure,
+      path: "/",
+      maxAge: 60 * 60 * 24 * 7,
+    });
+
     return response;
   } catch (error) {
     console.error("OTP verification error:", error);

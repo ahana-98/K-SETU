@@ -1,8 +1,13 @@
 import { NextResponse } from "next/server";
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "@/db";
 import { users } from "@/db/schema";
-import { generateOtp, hashOtp } from "@/lib/auth";
+import {
+  DEMO_USERS,
+  generateOtp,
+  hashOtp,
+  localDemoModeEnabled,
+} from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
@@ -16,6 +21,27 @@ export async function POST(req: Request) {
       );
     }
 
+    /*
+     * Local Demo Mode
+     *
+     * Use the same demo OTP that verify-otp/route.ts accepts.
+     * This allows mobile OTP login even when the database is unavailable.
+     */
+    if (localDemoModeEnabled()) {
+      const demoUser = DEMO_USERS[0];
+
+      return NextResponse.json({
+        message: "Demo OTP generated successfully.",
+        expiresInSeconds: 300,
+        demoOtp: "123456",
+        demoRole: demoUser.role,
+        demoPhone: phone,
+      });
+    }
+
+    /*
+     * Normal database OTP flow
+     */
     const [user] = await db
       .select()
       .from(users)
@@ -24,7 +50,10 @@ export async function POST(req: Request) {
 
     if (!user) {
       return NextResponse.json(
-        { error: "No K-SETU account is registered with this mobile number." },
+        {
+          error:
+            "No K-SETU account is registered with this mobile number.",
+        },
         { status: 404 }
       );
     }
@@ -36,7 +65,10 @@ export async function POST(req: Request) {
       now - user.otpCreatedAt.getTime() < 30_000
     ) {
       return NextResponse.json(
-        { error: "Please wait 30 seconds before requesting another OTP." },
+        {
+          error:
+            "Please wait 30 seconds before requesting another OTP.",
+        },
         { status: 429 }
       );
     }
@@ -55,7 +87,6 @@ export async function POST(req: Request) {
       })
       .where(eq(users.id, user.id));
 
-    // Prototype only: return the OTP so it can be tested without an SMS provider.
     return NextResponse.json({
       message: "OTP generated successfully.",
       expiresInSeconds: 300,
