@@ -176,7 +176,7 @@ if (settingsRows.length === 0) {
       authorizationStatus: def.auth,
       authorizationDetails: def.auth === "demo_authorized" ? "Demo authorization record (CPCB-style) — SAMPLE DATA" : "Authorization pending — SAMPLE DATA",
       contact: `+91 98${Math.floor(10000000 + r() * 89999999)}`,
-      pickupAvailable: r() > 0.25,
+      pickupAvailable: def.auth === "demo_authorized",
       offeredRates: rates,
     });
   }

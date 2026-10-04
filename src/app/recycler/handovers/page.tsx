@@ -82,6 +82,22 @@ export default function HandoversPage() {
       setBusy(null);
     }
   }
+  async function confirmPickup(txId: number) {
+  setBusy(`${txId}-pickup`);
+
+  try {
+    await api(`/handovers/${txId}/confirm-pickup`, {
+      method: "POST",
+    });
+
+    push("Pickup from collector confirmed ✓", "ok");
+    load();
+  } catch (e: any) {
+    push(e.message, "danger");
+  } finally {
+    setBusy(null);
+  }
+}
 
   async function recordPayment(txId: number) {
     setBusy(`${txId}-payment`);
@@ -211,43 +227,71 @@ export default function HandoversPage() {
               )}
 
               {/* Payment */}
-              {tx.status === "handover" && (
-                <div className="rounded-lg bg-mint p-3">
-                  <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-sage">
-                    Payment
-                  </p>
+{/* Pickup + Payment */}
+{tx.status === "handover" && (
+  <div className="rounded-lg bg-mint p-3 space-y-3">
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-sage">
+        Pickup from Collector
+      </p>
 
-                  <div className="flex gap-2">
-                    <select
-                      className="flex-1 rounded-md border border-[#cfe0d4] bg-white px-2 py-1.5 text-xs"
-                      value={method[tx.id] || "cash"}
-                      onChange={(e) =>
-                        setMethod((s) => ({
-                          ...s,
-                          [tx.id]: e.target.value,
-                        }))
-                      }
-                    >
-                      <option value="cash">Cash</option>
-                      <option value="upi">UPI (demo)</option>
-                      <option value="other">Other</option>
-                    </select>
+      <p className="mt-1 text-xs text-sage">
+        The handover OTP has been verified. Confirm that the lot has been
+        picked up from the collector before recording payment.
+      </p>
 
-                    <Btn
-                      size="sm"
-                      disabled={busy !== null}
-                      onClick={() => recordPayment(tx.id)}
-                    >
-                      {busy === `${tx.id}-payment` ? (
-                        <Spinner />
-                      ) : (
-                        <Icon name="wallet" size={14} />
-                      )}
-                      {t("recy.markPaid")}
-                    </Btn>
-                  </div>
-                </div>
-              )}
+      <Btn
+        className="mt-2 w-full"
+        size="sm"
+        disabled={busy !== null}
+        onClick={() => confirmPickup(tx.id)}
+      >
+        {busy === `${tx.id}-pickup` ? (
+          <Spinner />
+        ) : (
+          <Icon name="truck" size={14} />
+        )}
+        Confirm Pickup from Collector
+      </Btn>
+    </div>
+
+    <div className="border-t border-[#cfe0d4] pt-3">
+      <p className="mb-2 text-[10px] font-bold uppercase tracking-widest text-sage">
+        Payment / Recycling
+      </p>
+
+      <div className="flex gap-2">
+        <select
+          className="flex-1 rounded-md border border-[#cfe0d4] bg-white px-2 py-1.5 text-xs"
+          value={method[tx.id] || "cash"}
+          onChange={(e) =>
+            setMethod((s) => ({
+              ...s,
+              [tx.id]: e.target.value,
+            }))
+          }
+        >
+          <option value="cash">Cash</option>
+          <option value="upi">UPI (demo)</option>
+          <option value="other">Other</option>
+        </select>
+
+        <Btn
+          size="sm"
+          disabled={busy !== null}
+          onClick={() => recordPayment(tx.id)}
+        >
+          {busy === `${tx.id}-payment` ? (
+            <Spinner />
+          ) : (
+            <Icon name="wallet" size={14} />
+          )}
+          {t("recy.markPaid")}
+        </Btn>
+      </div>
+    </div>
+  </div>
+)}
             </div>
 
             <p className="mt-2 text-[10px] text-sage">
