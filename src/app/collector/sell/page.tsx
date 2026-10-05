@@ -284,11 +284,10 @@ export default function SellPage() {
     setErr(null);
 
     try {
-      const sig = image
-        ? `${image.length}:${image.slice(30, 80)}`
-        : fileName;
-
-      const res = await api<any>("/ml/classify", {
+const sig = image
+  ? image.replace(/^data:image\/[^;]+;base64,/, "")
+  : fileName;
+        const res = await api<any>("/ml/classify", {
         method: "POST",
         body: JSON.stringify({
           fileName,
